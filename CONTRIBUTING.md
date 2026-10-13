@@ -27,6 +27,15 @@ Le PDF doit être produit sans erreur. Les avertissements `multiply defined` sur
 labels de questions sont connus et acceptés (effets de `\printanswers` /
 `\noprintanswers`).
 
+## Ne pas supprimer `minted2.sty`
+
+`minted2.sty` est une variante Debian de `minted` : elle n'existe ni dans TeXLive amont
+ni dans Ubuntu. Elle est donc versionnée à la racine du dépôt (licence LPPL, voir son
+en-tête) et LaTeX la charge depuis le dossier courant. Sans elle, la CI Ubuntu ne peut
+pas compiler le document. Ne le remplacez pas par `minted` : `minted` v3 (TeXLive amont)
+exige en plus un exécutable `minted` (pip), absent des images CI, et son rendu diffère
+avec les options utilisées ici (`fontfamily=helvetica`, `baselinestretch`).
+
 ## Cycle de revue
 
 1. Vous ouvrez une PR depuis une branche de votre fork.
