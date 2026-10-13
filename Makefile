@@ -1,13 +1,14 @@
 # Makefile du TP SSH autonome
 # make        : compile ssh-indep.pdf
 # make check  : compilation stricte (utilisée par la CI) + vérification d'autonomie
+# make test-autonomie : prouve que le garde-fou d'autonomie fonctionne
 # make clean  : supprime les fichiers auxiliaires
 
 TEX   := ssh-indep.tex
 PDF   := $(TEX:.tex=.pdf)
 LATEX := latexmk -pdf -shell-escape -interaction=nonstopmode
 
-.PHONY: all check clean
+.PHONY: all check test-autonomie clean
 
 all: $(PDF)
 
@@ -24,10 +25,13 @@ check: $(TEX)
 	@# 3. le PDF doit exister et être de taille raisonnable
 	@test -s $(PDF) || { echo "ERREUR : $(PDF) absent ou vide"; exit 1; }
 	@# 4. aucun fichier lu ne doit sortir du dépôt (preuve d'autonomie)
-	@if grep -nE '^INPUT (\./)?\.\.' $(TEX:.tex=.fls); then \
-	  echo "ERREUR : lecture d'un fichier hors du dépôt"; exit 1; \
-	fi
+	@#    Le contrôle porte sur le file de latexmk, pas seulement sur le source :
+	@#    un \graphicspath{{/chemin/absolu}} est invisible au grep sur le .tex.
+	./tools/check-fls.sh $(TEX:.tex=.fls)
 	@echo "OK : $(PDF) compilé ($$(wc -c < $(PDF)) octets), autonomie vérifiée"
+
+test-autonomie:
+	./tools/test-autonomie.sh $(TEX)
 
 clean:
 	latexmk -c $(TEX)

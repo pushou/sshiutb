@@ -53,9 +53,17 @@ Quatre contrôles, tous bloquants :
    (les lignes de commentaire sont ignorées, `\includegraphics` n'est pas concernée).
 3. Le document compile sans erreur fatale et produit un PDF non vide.
 4. Aucun fichier lu pendant la compilation ne sort du dépôt : la CI inspecte le
-   *file* de latexmk (`ssh-indep.fls`) et refuse toute entrée `INPUT ../...`.
-   Ce contrôle attrape les dépendances invisibles au grep, par exemple une image
-   atteinte via `\graphicspath{{../outside/}}`.
+   *file* de latexmk (`ssh-indep.fls`) classe chaque entrée `INPUT` et rejette
+   tout chemin qui n'est ni dans le dépôt ni dans un arbre TeX installé par le
+   système. Ce contrôle attrape les dépendances invisibles au grep sur le source,
+   par exemple une image atteinte via `\graphicspath{{/chemin/hors/depot/}}`
+   (chemin absolu) ou `\graphicspath{{../outside/}}` (chemin relatif).
+   Les arbres TeX personnels (`~/texmf`) sont volontairement exclus : un fichier
+   qui n'existe que sur une machine est précisément ce que l'autonomie interdit.
+
+Le garde-fou lui-même est testé : `make test-autonomie` compile deux documents
+piégés (image par chemin absolu, `\input` absolu) et vérifie qu'ils sont bien
+rejetés, en plus d'accepter le document normal.
 
 `make check` exécute localement exactement les mêmes contrôles.
 

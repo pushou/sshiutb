@@ -78,15 +78,11 @@ jobs:
           echo "Compilation sans erreur fatale."
 
       # File de latexmk : liste réelle des fichiers lus pendant la compilation.
-      # Aucun ne doit sortir du dépôt (../ ou chemin absolu hors dépôt) : c'est
-      # la preuve d'autonomie la plus forte, indépendante du source.
+      # Aucun ne doit sortir du dépôt : c'est la preuve d'autonomie la plus forte,
+      # indépendante du source. Le contrôle classe chaque INPUT (chemin relatif,
+      # dépôt, arbre TeX système) et rejette tout autre chemin absolu.
       - name: Verify no file outside the repository was read
-        run: |
-          if grep -nE '^INPUT (\./)?\.\.' ssh-indep.fls; then
-            echo "::error::le document lit un fichier hors du dépôt."
-            exit 1
-          fi
-          echo "Autonomie vérifiée : $(grep -c '^INPUT' ssh-indep.fls) fichiers lus, tous dans le dépôt."
+        run: ./tools/check-fls.sh ssh-indep.fls
 
       - name: Upload the compiled PDF
         uses: actions/upload-artifact@v7
