@@ -49,11 +49,14 @@ jobs:
 
       - name: Verify the document is self-contained
         run: |
-          if grep -nE '^[^%]*\\(input|include|import|subfile)\{' ssh-indep.tex; then
+          # Formes \input{...}, \input ... (sans accolades), \include, \import,
+          # \subfile ; les lignes de commentaire (%) sont ignorees et
+          # \includegraphics / \includeonly ne correspondent pas.
+          if grep -nE '^[^%]*\\(input|include|import|subfile)([^a-zA-Z]|$)' ssh-indep.tex; then
             echo "::error::ssh-indep.tex dépend d'un fichier externe : le document doit rester autonome."
             exit 1
           fi
-          echo "Autonomie vérifiée : aucune dépendance externe."
+          echo "Autonomie vérifiée : aucune dépendance externe dans le source."
 
       - name: Compile with latexmk (shell-escape for minted)
         run: |
@@ -73,6 +76,17 @@ jobs:
             exit 1
           fi
           echo "Compilation sans erreur fatale."
+
+      # File de latexmk : liste réelle des fichiers lus pendant la compilation.
+      # Aucun ne doit sortir du dépôt (../ ou chemin absolu hors dépôt) : c'est
+      # la preuve d'autonomie la plus forte, indépendante du source.
+      - name: Verify no file outside the repository was read
+        run: |
+          if grep -nE '^INPUT (\./)?\.\.' ssh-indep.fls; then
+            echo "::error::le document lit un fichier hors du dépôt."
+            exit 1
+          fi
+          echo "Autonomie vérifiée : $(grep -c '^INPUT' ssh-indep.fls) fichiers lus, tous dans le dépôt."
 
       - name: Upload the compiled PDF
         uses: actions/upload-artifact@v7

@@ -16,14 +16,18 @@ $(PDF): $(TEX)
 
 check: $(TEX)
 	@# 1. le document ne doit dépendre d'aucun fichier extérieur
-	@if grep -nE '^[^%]*\\(input|include|import|subfile)\{' $(TEX); then \
+	@if grep -nE '^[^%]*\\(input|include|import|subfile)([^a-zA-Z]|$$)' $(TEX); then \
 	  echo "ERREUR : dépendance externe détectée dans $(TEX)"; exit 1; \
 	fi
 	@# 2. le document doit compiler sans erreur
 	$(LATEX) -halt-on-error $(TEX)
 	@# 3. le PDF doit exister et être de taille raisonnable
 	@test -s $(PDF) || { echo "ERREUR : $(PDF) absent ou vide"; exit 1; }
-	@echo "OK : $(PDF) compilé ($(shell wc -c < $(PDF)) octets)"
+	@# 4. aucun fichier lu ne doit sortir du dépôt (preuve d'autonomie)
+	@if grep -nE '^INPUT (\./)?\.\.' $(TEX:.tex=.fls); then \
+	  echo "ERREUR : lecture d'un fichier hors du dépôt"; exit 1; \
+	fi
+	@echo "OK : $(PDF) compilé ($$(wc -c < $(PDF)) octets), autonomie vérifiée"
 
 clean:
 	latexmk -c $(TEX)

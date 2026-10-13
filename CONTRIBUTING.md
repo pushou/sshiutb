@@ -44,6 +44,28 @@ avec les options utilisées ici (`fontfamily=helvetica`, `baselinestretch`).
 3. Le check `compile` doit être vert.
 4. L'auteur relit, demande des changements éventuellement, puis fusionne.
 
+## Ce que vérifie la CI
+
+Quatre contrôles, tous bloquants :
+
+1. `minted2.sty` est présent dans le dépôt.
+2. Le source ne contient aucun `\input`, `\include`, `\import` ou `\subfile`
+   (les lignes de commentaire sont ignorées, `\includegraphics` n'est pas concernée).
+3. Le document compile sans erreur fatale et produit un PDF non vide.
+4. Aucun fichier lu pendant la compilation ne sort du dépôt : la CI inspecte le
+   *file* de latexmk (`ssh-indep.fls`) et refuse toute entrée `INPUT ../...`.
+   Ce contrôle attrape les dépendances invisibles au grep, par exemple une image
+   atteinte via `\graphicspath{{../outside/}}`.
+
+`make check` exécute localement exactement les mêmes contrôles.
+
+## Fusion
+
+La branche `main` est protégée : le check `compile (LaTeX)` est obligatoire, y compris
+pour l'auteur (un merge rouge est impossible, même en administrateur). Le dépôt impose
+un historique linéaire, donc **les merge commits sont interdits** : la fusion se fait en
+squash ou en rebase (`gh pr merge --squash`).
+
 ## Style
 
 - Le document est en français.
