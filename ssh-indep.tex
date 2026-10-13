@@ -23,10 +23,11 @@
 %recodage numerotation \part
 \renewcommand{\partlabel}{\thepartno}
 
-\newcommand{\iconetext}[1]{
-\begin{array}{c}
-\includegraphics{#1}
-\end{array}}
+% \iconetext : une image centree verticalement.
+% L'environnement array n'existe qu'en mode mathematique : sans ensuremath,
+% tout appel a \iconetext echoue avec « ! Missing $ inserted ».
+\newcommand{\iconetext}[1]{%
+\ensuremath{\begin{array}{c}\includegraphics{#1}\end{array}}}
 
 \newcommand{\jmp}{Jean-Marc Pouchoulon}
 
