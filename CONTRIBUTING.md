@@ -88,6 +88,9 @@ image atteinte via `\graphicspath{{/chemin/hors/depot/}}` ou `\graphicspath{{../
 Les arbres TeX personnels (`~/texmf`) sont volontairement exclus : un fichier qui
 n'existe que sur une machine est précisément ce que l'autonomie interdit.
 
+Si vous ajoutez une image, versionnez-la dans le dépôt. `\graphicspath` doit pointer
+uniquement vers un dossier qui y est présent.
+
 Le garde-fou est lui-même testé :
 
 ```bash

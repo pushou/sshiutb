@@ -16,18 +16,11 @@
 
 
 \frenchsetup{AutoSpacePunctuation=false}
-\usepackage{graphicx}
 
 \author{Pouchoulon}
 
 %recodage numerotation \part
 \renewcommand{\partlabel}{\thepartno}
-
-% \iconetext : une image centree verticalement.
-% L'environnement array n'existe qu'en mode mathematique : sans ensuremath,
-% tout appel a \iconetext echoue avec « ! Missing $ inserted ».
-\newcommand{\iconetext}[1]{%
-\ensuremath{\begin{array}{c}\includegraphics{#1}\end{array}}}
 
 \newcommand{\jmp}{Jean-Marc Pouchoulon}
 
@@ -360,9 +353,6 @@
 % pour afficher (ou pas) les réponses dans le document
 \printanswers
 \noprintanswers
-
-\graphicspath{{./images/}}
-
 
 \begin{document}
 \maketitle
