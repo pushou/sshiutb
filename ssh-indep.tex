@@ -1023,11 +1023,19 @@ Le tunnel est-il encore là ? Pourquoi le combo \texttt{ControlPersist} + \textt
 le bon réflexe ?
 \begin{solution}
 \begin{bashcode}
-ssh -fN -L 18080:127.0.0.1:8080 cible
+ssh -o ExitOnForwardFailure=yes -fN -L 18080:127.0.0.1:8080 cible
 # ... fermeture du terminal ...
-curl 127.0.0.1:18080     # toujours servable
-ssh -O check cible       # Master running (pid=...)
+ss -ltnp | grep ':18080' # écouteur local présent
+curl 127.0.0.1:18080    # teste le service au bout du tunnel
+ssh -O check cible      # vérifie le maître SSH, pas le tunnel
 \end{bashcode}
+\texttt{ExitOnForwardFailure yes} fait échouer la commande si le transfert demandé ne peut
+pas être établi (par exemple si le port local est déjà occupé). Avec \texttt{-f}, SSH attend
+que le transfert soit établi avant de passer en arrière-plan. \texttt{ss} vérifie que le port
+local écoute ; \texttt{ssh -O check} confirme seulement que le maître SSH tourne. Seul
+\texttt{curl} vérifie aussi l'accès au service distant : l'option ne détecte pas une panne du
+service derrière un tunnel déjà établi.
+
 Sans \texttt{ControlPersist}, le maître meurt quand le dernier client se déconnecte : le
 tunnel \texttt{-fN} mourrait avec votre terminal. Avec
 \texttt{ControlPersist 10m}, le maître survit 10~minutes après la dernière déconnexion
