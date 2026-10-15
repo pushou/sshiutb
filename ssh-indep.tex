@@ -448,6 +448,33 @@ le \texttt{home}, \texttt{~/.ssh} ou \texttt{authorized\_keys} sont \emph{group/
 écrivables ou non possédés par l'utilisateur (700/600 attendus ; 644 toléré sur
 \texttt{authorized\_keys}, 600 recommandé).
 \end{solution}
+\question La clé fonctionne. Sur le bastion, interdisez maintenant l'authentification
+par mot de passe. Comment prouver, depuis le client, que le serveur ne l'accepte plus ?
+Pourquoi faut-il aussi désactiver \texttt{KbdInteractiveAuthentication} ?
+\begin{solution}
+\begin{bashcode}
+# sur le bastion : gardez une session ouverte pendant toute la manipulation !
+# dans /etc/ssh/sshd_config :
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin prohibit-password
+# valider la syntaxe, puis recharger (une session ouverte survit au reload) :
+sshd -t && systemctl reload ssh
+
+# depuis le client : interdire la clé et forcer le mot de passe
+ssh -p 2222 -o PubkeyAuthentication=no -o PreferredAuthentications=password root@127.0.0.1
+# root@127.0.0.1: Permission denied (publickey).
+
+# configuration effective, sans se connecter :
+sshd -T | grep -Ei 'passwordauthentication|kbdinteractiveauthentication'
+\end{bashcode}
+Le message d'erreur liste les méthodes que le serveur annonce encore. Avec seulement
+\texttt{PasswordAuthentication no}, il peut rester
+\texttt{(publickey,keyboard-interactive)} : quand \texttt{UsePAM} est à \texttt{yes}
+(défaut sur Debian et Ubuntu), \texttt{keyboard-interactive} passe par PAM et le serveur
+continue d'envoyer un prompt \texttt{Password:}. Le mot de passe reste donc demandable.
+Le résultat attendu est \texttt{(publickey)} seul.
+\end{solution}
 \question Piège : faites \texttt{chmod 644} sur votre clé privée, puis essayez de vous connecter.
 Que répond le client ? Pourquoi le \emph{client} (et non le serveur) refuse-t-il ?
 \begin{solution}
