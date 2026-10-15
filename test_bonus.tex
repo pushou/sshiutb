@@ -1,0 +1,40 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+
+% --- TOUT LE PRÉAMBULE DOIT RESTER ICI ---
+
+\begin{document} % <--- C'est ici que le document commence vraiment
+
+\begin{titlepage}
+\begin{center}
+{\huge \textbf{Exercice Bonus : Protection de la clé privée}}
+\end{center}
+\end{titlepage}
+
+\section*{Contexte}
+Vous restaurez une sauvegarde de votre clé privée sur votre poste. Les permissions actuelles du fichier restauré sont \texttt{rw-r--r--} (644). Vous tentez immédiatement une connexion SSH vers votre serveur distant.
+
+\begin{enumerate}
+    \item Quel est le comportement exact du client SSH local lors de cette tentative de connexion ?
+    \item Quelle commande taper pour corriger le problème avant de pouvoir vous connecter ?
+    \item Vous réalisez que vous n'avez sauvegardé que la clé privée. Cependant, vous avez besoin du fichier de la clé publique pour autoriser cette clé sur un nouveau serveur. Quelle commande permet de déduire et recréer la clé publique à partir de cette clé privée ?
+    \item Lors de la restauration, la clé privée n'est pas protégée par une passphrase. Quelle commande permet d'en ajouter une localement sans altérer la paire de clés et sans la repartager aux serveurs ?
+    \item Les permissions locales ont été corrigées, mais lors de la connexion, le serveur demande un mot de passe au lieu d'accepter la clé. En recherchant sur le serveur, vous découvrez que le dossier \texttt{\~{}/.ssh} de l'utilisateur distant possède les droits \texttt{777}. Quel mécanisme du serveur SSH bloque l'authentification par clé et pourquoi ?
+\end{enumerate}
+
+\section*{Correction}
+
+\begin{enumerate}
+    \item Le client SSH va bloquer préventivement la connexion et afficher une erreur \texttt{WARNING: UNPROTECTED PRIVATE KEY FILE!}. Il refuse d'utiliser une clé privée si elle est lisible par d'autres utilisateurs sur le système local.
+    \item Il faut restreindre les droits de lecture et d'écriture au seul propriétaire du fichier avec la commande : 
+    \begin{verbatim}chmod 600 ~/.ssh/id_ed25519\end{verbatim}
+    \item Vous devez utiliser l'option \texttt{-y}, qui lit la clé privée et affiche la clé publique correspondante et rediriger la sortie vers un nouveau fichier : 
+    \begin{verbatim}ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub\end{verbatim}
+    \item Il faut utiliser la commande \texttt{ssh-keygen -p -f \~{}/.ssh/id\_ed25519}. L'option \texttt{-p} permet de changer la passphrase, vous demandera l'ancienne phrase de passe (laissez vide) puis vous invitera à en saisir une nouvelle, chiffrant ainsi le fichier local.
+    \item C'est la directive \texttt{StrictModes yes}, activée par défaut côté serveur. Elle oblige le démon SSH à vérifier que l'arborescence de l'utilisateur (\texttt{\~{}} et \texttt{\~{}/.ssh}) n'est pas inscriptible par d'autres utilisateurs. Des droits \texttt{777} permettraient à n'importe quel autre utilisateur du serveur d'ajouter sa propre clé dans votre fichier \texttt{authorized\_keys}. Face à cette faille, le serveur ignore silencieusement vos clés et retombe sur l'authentification par mot de passe.
+\end{enumerate}
+
+\end{document} % <--- Fin du document
