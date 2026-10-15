@@ -515,18 +515,27 @@ non, 3072 ? 4096 ? »). RSA 4096 n'est « plus sûr » que ed25519 que de très 
 de 10 fois le poids.
 \end{solution}
 \question Que fait \texttt{ssh-keyscan} ? À quoi sert-il dans l'automatisation, et quelle
-est la limite \textbf{sécurité} fondamentale à connaître avant de l'utiliser ?
+est la limite \textbf{sécurité} fondamentale à connaître avant de l'utiliser ? Comment
+vérifier l'empreinte du bastion avant de l'ajouter à \texttt{known\_hosts} ?
 \begin{solution}
 \begin{bashcode}
-# pré-peupler known_hosts d'une flotte (ex. avant un run d'automatisation) :
-ssh-keyscan -t ed25519 -p 2222 127.0.0.1 >> ~/.ssh/known_hosts
-ssh-keyscan -f serveurs.txt          # une IP/hostname par ligne
+# sur la console du bastion : empreinte obtenue par un canal de confiance
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+# depuis le poste client : empreinte de la clé récupérée sur le réseau
+ssh-keyscan -t ed25519 -p 2222 127.0.0.1 > /tmp/bastion_host_key
+ssh-keygen -lf /tmp/bastion_host_key
+# si les deux empreintes sont identiques, ajouter la clé à known_hosts
+cat /tmp/bastion_host_key >> ~/.ssh/known_hosts
 \end{bashcode}
 Il récupère les clés \emph{publiques de hôte} sans s'authentifier. Limite fondamentale :
 il ne fournit \textbf{aucune authentification} du serveur — sur le premier contact, un
 MITM peut répondre avec \emph{sa} clé, qui sera alors enregistrée comme bonne.
-À n'utiliser qu'après vérification de l'empreinte par un canal de confiance
-(out-of-band), ou en environnement maîtrisé.
+\texttt{ssh-keyscan} peut servir à pré-peupler \texttt{known\_hosts}, par exemple avant
+un run d'automatisation, mais uniquement après cette vérification (out-of-band), ou en
+environnement maîtrisé.
+Il faut donc comparer les deux empreintes avant d'ajouter la clé : celle obtenue sur la
+console du bastion et celle calculée sur la clé récupérée avec \texttt{ssh-keyscan}. Si
+elles sont différentes, ne pas ajouter la clé ni accepter la connexion.
 \end{solution}
 \end{questions}
 
