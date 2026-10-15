@@ -587,17 +587,10 @@ peuvent aussi être placées dans
 \texttt{C:\textbackslash ProgramData\textbackslash ssh\textbackslash administrators\_authorized\_keys}
 côté serveur, mais côté client rien ne change : c'est le même \texttt{ssh-add}.
 \end{solution}
-\question Ajoutez \texttt{AddKeysToAgent yes} dans votre config (section suivante) et expliquez
-le comportement obtenu.
-\begin{solution}
-Dès qu'une clé déverrouillée \emph{a servi} pour s'authentifier, elle est automatiquement
-ajoutée à l'agent pour la suite de la session : vous ne re-saisissez la phrase de passe
-qu'une fois, même si vous aviez oublié de faire \texttt{ssh-add} avant.
-\end{solution}
 \question \textbf{Le piège du \texttt{ForwardAgent}.} Connectez-vous au bastion avec
 \texttt{ssh -A} (ou \texttt{ForwardAgent yes}), puis exécutez \emph{sur le bastion}
 \texttt{ssh-add -l}. Que voyez-vous ? Formulez précisément le risque, puis expliquez
-pourquoi le \texttt{ProxyJump} (section suivante) ne présente pas ce risque.
+pourquoi le \texttt{ProxyJump} ne présente pas ce risque.
 \begin{solution}
 \begin{bashcode}
 ssh -A -p 2222 root@127.0.0.1
@@ -646,6 +639,13 @@ ssh bastion && ssh cible
 \end{bashcode}
 Désormais : plus d'IP, plus de \texttt{-p}, plus de \texttt{-i}, plus de
 \texttt{-o ProxyCommand=...}.
+\end{solution}
+\question Ajoutez \texttt{AddKeysToAgent yes} dans votre config et expliquez
+le comportement obtenu.
+\begin{solution}
+Dès qu'une clé déverrouillée \emph{a servi} pour s'authentifier, elle est automatiquement
+ajoutée à l'agent pour la suite de la session : vous ne re-saisissez la phrase de passe
+qu'une fois, même si vous aviez oublié de faire \texttt{ssh-add} avant.
 \end{solution}
 \question Complétez avec un bloc \texttt{Host *} de valeurs par défaut
 (\texttt{ServerAliveInterval}, \texttt{ConnectTimeout}, \texttt{AddKeysToAgent}).
